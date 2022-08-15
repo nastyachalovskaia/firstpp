@@ -20,187 +20,122 @@ public class UserDaoJDBCImpl implements UserDao {
                 + " LASTNAME varchar(100) NOT NULL,"
                 + " AGE tinyint"
                 + ")";
-        Connection conn = null;
-        Statement statement = null;
-        try {
-            conn = Util.getConnection();
-            statement = conn.createStatement();
+
+        try (Connection connection = Util.getConnection();
+             Statement statement = connection.createStatement()) {
             statement.execute(SQL_CREATE);
-            conn.commit();
+
+            try {
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback();
+            }
         } catch (SQLException e) {
             System.err.println("Не удалось создать таблицу.");
-            try {
-                conn.rollback();
-            } catch (SQLException ex) {
-                System.err.println("Ничего не удалось откатить.");
-            }
-
-        } finally {
-            try {
-                conn.close();
-                statement.close();
-            } catch (SQLException e) {
-                System.err.println("Не удалось закрыть соединение с бд.");
-            }
         }
     }
 
     public void dropUsersTable() {
         String SQL_DROP = "DROP TABLE USERS";
 
-        Connection conn = null;
-        Statement statement = null;
-        try {
-            conn = Util.getConnection();
-            statement = conn.createStatement();
+        try (Connection connection = Util.getConnection();
+             Statement statement = connection.createStatement()) {
             statement.execute(SQL_DROP);
-            conn.commit();
+
+            try {
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback();
+            }
         } catch (SQLException e) {
             System.err.println("Не удалось удалить таблицу.");
-            try {
-                conn.rollback();
-            } catch (SQLException ex) {
-                System.err.println("Ничего не удалось откатить.");
-            }
-
-        } finally {
-            try {
-                conn.close();
-                statement.close();
-            } catch (SQLException e) {
-                System.err.println("Не удалось закрыть соединение с бд.");
-            }
         }
     }
 
     public void saveUser(String name, String lastName, byte age) {
-        String SQL_SAVEUSER = "INSERT INTO USERS (NAME, LASTNAME, AGE) VALUES (?, ?, ?)";
+        String SQL_SAVE_USER = "INSERT INTO USERS (NAME, LASTNAME, AGE) VALUES (?, ?, ?)";
 
-        Connection conn = null;
-        PreparedStatement statement = null;
-        try {
-            conn = Util.getConnection();
-            statement = conn.prepareStatement(SQL_SAVEUSER);
-            statement.setString(1, name);
-            statement.setString(2, lastName);
-            statement.setByte(3, age);
-            statement.execute();
-            conn.commit();
+
+        try (Connection connection = Util.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE_USER)) {
+            preparedStatement.setString(1, name);
+            preparedStatement.setString(2, lastName);
+            preparedStatement.setByte(3, age);
+            preparedStatement.execute();
+            try {
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback();
+            }
         } catch (SQLException e) {
             System.err.println("Не удалось сохранить пользователя.");
-            try {
-                conn.rollback();
-            } catch (SQLException ex) {
-                System.err.println("Ничего не удалось откатить.");
-            }
-
-        } finally {
-            try {
-                conn.close();
-                statement.close();
-            } catch (SQLException e) {
-                System.err.println("Не удалось закрыть соединение с бд.");
-            }
         }
     }
 
     public void removeUserById(long id) {
-        String SQL_REMOVEUSERSBYID = "DELETE FROM USERS WHERE ID = ?";
+        String SQL_REMOVE_USERS_BY_ID = "DELETE FROM USERS WHERE ID = ?";
 
-        Connection conn = null;
-        PreparedStatement statement = null;
-        try {
-            conn = Util.getConnection();
-            statement = conn.prepareStatement(SQL_REMOVEUSERSBYID);
-            statement.setLong(1, id);
-            statement.execute();
-            conn.commit();
+        try (Connection connection = Util.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SQL_REMOVE_USERS_BY_ID)) {
+            preparedStatement.setLong(1, id);
+            preparedStatement.execute();
+            try {
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback();
+            }
         } catch (SQLException e) {
             System.err.println("Не удалось удалить пользователя по айди.");
-            try {
-                conn.rollback();
-            } catch (SQLException ex) {
-                System.err.println("Ничего не удалось откатить.");
-            }
-
-        } finally {
-            try {
-                conn.close();
-                statement.close();
-            } catch (SQLException e) {
-                System.err.println("Не удалось закрыть соединение с бд.");
-            }
         }
     }
 
     public List<User> getAllUsers() {
 
         String SQL_GET_ALL_USERS = "select * from users";
-        Connection conn = null;
-        Statement statement = null;
-        ResultSet rs = null;
-        List <User> userList = new ArrayList<>();
 
-        try {
-            conn = Util.getConnection();
-            statement = conn.createStatement();
-            rs = statement.executeQuery(SQL_GET_ALL_USERS);
+        ResultSet resultSet = null;
+        List<User> userList = new ArrayList<>();
 
-            while (rs.next()) {
+        try (Connection connection = Util.getConnection();
+             Statement statement = connection.createStatement()) {
+
+            resultSet = statement.executeQuery(SQL_GET_ALL_USERS);
+
+            while (resultSet.next()) {
                 User user = new User();
-                user.setId(rs.getLong(1));
-                user.setName(rs.getString(2));
-                user.setLastName(rs.getString(3));
-                user.setAge(rs.getByte(4));
+                user.setId(resultSet.getLong(1));
+                user.setName(resultSet.getString(2));
+                user.setLastName(resultSet.getString(3));
+                user.setAge(resultSet.getByte(4));
                 userList.add(user);
             }
 
-            conn.commit();
+            try {
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback();
+            }
         } catch (SQLException e) {
             System.err.println("Не удалось вернуть таблицу.");
-            try {
-                conn.rollback();
-            } catch (SQLException ex) {
-                System.err.println("Ничего не удалось откатить.");
-            }
-
-        } finally {
-            try {
-                conn.close();
-                statement.close();
-            } catch (SQLException e) {
-                System.err.println("Не удалось закрыть соединение с бд.");
-            }
         }
         return userList;
     }
 
     public void cleanUsersTable() {
+        String SQL_CLEAN_USERS_TABLE = "TRUNCATE TABLE USERS";
 
-        String SQL_CLEANUSERSTABLE = "TRUNCATE TABLE USERS";
+        try (Connection connection = Util.getConnection();
+             Statement statement = connection.createStatement()) {
 
-        Connection conn = null;
-        Statement statement = null;
-        try {
-            conn = Util.getConnection();
-            statement = conn.createStatement();
-            statement.execute(SQL_CLEANUSERSTABLE);
-            conn.commit();
+            statement.execute(SQL_CLEAN_USERS_TABLE);
+            try {
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback();
+            }
         } catch (SQLException e) {
             System.err.println("Не удалось очистить таблицу.");
-            try {
-                conn.rollback();
-            } catch (SQLException ex) {
-                System.err.println("Ничего не удалось откатить.");
-            }
 
-        } finally {
-            try {
-                conn.close();
-                statement.close();
-            } catch (SQLException e) {
-                System.err.println("Не удалось закрыть соединение с бд.");
-            }
         }
 
     }
