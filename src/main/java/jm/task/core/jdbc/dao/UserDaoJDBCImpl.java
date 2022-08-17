@@ -24,12 +24,8 @@ public class UserDaoJDBCImpl implements UserDao {
         try (Connection connection = Util.getConnection();
              Statement statement = connection.createStatement()) {
             statement.execute(SQL_CREATE);
+            connection.commit();
 
-            try {
-                connection.commit();
-            } catch (SQLException e) {
-                connection.rollback();
-            }
         } catch (SQLException e) {
             System.err.println("Не удалось создать таблицу.");
         }
@@ -42,11 +38,8 @@ public class UserDaoJDBCImpl implements UserDao {
              Statement statement = connection.createStatement()) {
             statement.execute(SQL_DROP);
 
-            try {
-                connection.commit();
-            } catch (SQLException e) {
-                connection.rollback();
-            }
+            connection.commit();
+
         } catch (SQLException e) {
             System.err.println("Не удалось удалить таблицу.");
         }
@@ -62,11 +55,7 @@ public class UserDaoJDBCImpl implements UserDao {
             preparedStatement.setString(2, lastName);
             preparedStatement.setByte(3, age);
             preparedStatement.execute();
-            try {
-                connection.commit();
-            } catch (SQLException e) {
-                connection.rollback();
-            }
+            connection.commit();
         } catch (SQLException e) {
             System.err.println("Не удалось сохранить пользователя.");
         }
@@ -79,11 +68,8 @@ public class UserDaoJDBCImpl implements UserDao {
              PreparedStatement preparedStatement = connection.prepareStatement(SQL_REMOVE_USERS_BY_ID)) {
             preparedStatement.setLong(1, id);
             preparedStatement.execute();
-            try {
-                connection.commit();
-            } catch (SQLException e) {
-                connection.rollback();
-            }
+            connection.commit();
+
         } catch (SQLException e) {
             System.err.println("Не удалось удалить пользователя по айди.");
         }
@@ -110,11 +96,9 @@ public class UserDaoJDBCImpl implements UserDao {
                 userList.add(user);
             }
 
-            try {
-                connection.commit();
-            } catch (SQLException e) {
-                connection.rollback();
-            }
+
+            connection.commit();
+
         } catch (SQLException e) {
             System.err.println("Не удалось вернуть таблицу.");
         }
@@ -128,11 +112,7 @@ public class UserDaoJDBCImpl implements UserDao {
              Statement statement = connection.createStatement()) {
 
             statement.execute(SQL_CLEAN_USERS_TABLE);
-            try {
-                connection.commit();
-            } catch (SQLException e) {
-                connection.rollback();
-            }
+            connection.commit();
         } catch (SQLException e) {
             System.err.println("Не удалось очистить таблицу.");
 
